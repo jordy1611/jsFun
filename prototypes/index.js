@@ -1000,7 +1000,39 @@ const turingPrompts = {
     //   recursion: [ 'Pam', 'Leta' ]
     // }
 
-    const result = 'REPLACE WITH YOUR RESULT HERE';
+    /* .includes somewhere
+    make a list of curriculums from cohorts, keys are in order from cohorts
+    start with empty array
+    create array of curriculums using forEach.
+      for cohort
+        curriculem .forEach push curriculum into empty array
+    Array from new Set to elimenate duplicates.
+    Using a reduce on new array of curriculems, create a new object (entire thing will be acc)
+      each reduce acc[curriculem] = []
+    ---- back up is create empty object. foreach new array and set emptyobject[curriculum] = []
+      value = for each on instructors
+        if isntructor.teches.includes curriculem
+          push teacher name to acc curriculem
+    */
+
+  function getCurriculums() {
+    let curriculums = []
+    cohorts.forEach(cohort => curriculums.push(...cohort.curriculum))
+    curriculums = Array.from(new Set(curriculums))
+    let currics = curriculums.reduce((currics, curric) => {
+      currics[curric] = []
+      instructors.forEach(instructor => {
+        if (instructor.teaches.includes(curric)) {
+          currics[curric].push(instructor.name)
+        }
+      })
+      return currics
+    }, {})
+    return currics
+  }
+
+
+    const result = getCurriculums()
     return result;
 
     // Annotation:
@@ -1034,12 +1066,40 @@ const bossPrompts = {
     //   { bossName: 'Ursula', sidekickLoyalty: 20 },
     //   { bossName: 'Scar', sidekickLoyalty: 16 }
     // ]
+    /*
+    create array of new objects based on bosses
 
-    const result = 'REPLACE WITH YOUR RESULT HERE';
+    start with array of boss object keys using Object.keys
+    bosses array.reduce
+    push a new object into the acc
+      can just create object with key values
+      {bossName : bosses[boss].name, sidekickLoyalty: 0}
+      inside of reduce go through sidekicks with for each
+        for each side kick
+          if sidekick.boss === bosses[boss].name
+            sidekickLoyalty += sidekick.loyaltyToBoss
+      return acc
+    return full reduce
+    */
+
+    function getBossLoyalties() {
+      const bossKeys = Object.keys(bosses);
+      const bossLoyalties = bossKeys.reduce((loyalties, bossKey) => {
+        let bossInfo = {bossName: bosses[bossKey].name, sidekickLoyalty: 0}
+        sidekicks.forEach(sidekick => {
+          if (sidekick.boss === bosses[bossKey].name) {
+            bossInfo.sidekickLoyalty += sidekick.loyaltyToBoss
+          }
+        })
+        loyalties.push(bossInfo)
+        return loyalties
+      }, [])
+      return bossLoyalties
+    }
+
+
+    const result = getBossLoyalties();
     return result;
-
-    // Annotation:
-    // Write your annotation here as a comment
   }
 };
 
@@ -1062,31 +1122,41 @@ const bossPrompts = {
 // DATASET: constellations, stars } from ./datasets/astronomy
 const astronomyPrompts = {
   starsInConstellations() {
-    // we need to look through each constellation in the constellations objects
-    // how do we actually loop through this object
-    // Use object.keys to get the keys of the constellations
-    let result = [];
-    const constellationKeys = Object.keys(constellations);
-    // Loop through that
-    constellationKeys.forEach(constellationKey => {
-        // look up the key on the constellations object which will return us the stars
-        // loop through the stars
-        constellations[constellationKey].stars.forEach(star => {
-          // look at each star
-          // see if that star exists in the stars array
-          // use a find iterator to see if the star exists
-          const foundStar = stars.find(otherStar => {
-            return star === otherStar.name
-          })
-          // if it does than add it to some sort result set
-          if(foundStar) {
-            result.unshift(foundStar);
-          }
-        })
-    })
+    // return array of objects exactly the same objects as stars
+    //but filtered based on constellations
 
+    /* filtering stars based on constellation
+    crate empty array
+    for each constellation key
+     if constellation.stars.includes()
+    create an object keys array of constellations
+    forEach star
+      if
+      use object keys to iterate through constellations
+      if constellation
 
+create array of constellation keys
+reduce stars
+inside reduce, for each constellation key
+if constellation.stars includes(star.name)
+  push entire star into accumulator array
+return array
+      */
 
+  function getConstellationStars() {
+
+    const constellationKeys = Object.keys(constellations)
+    return stars.reduce((stars, star) => {
+      constellationKeys.forEach(constellationKey => {
+        if(constellations[constellationKey].stars.includes(star.name)) {
+          stars.push(star);
+        }
+      })
+      return stars
+    }, [])
+  }
+
+  return getConstellationStars()
   },
 
   starsByColor() {
@@ -1100,7 +1170,33 @@ const astronomyPrompts = {
     //   red: [{obj}]
     // }
 
-    const result = 'REPLACE WITH YOUR RESULT HERE';
+    /* return object with keys of star colors, value being array of stars with that color
+    need all of the colors of stars, need it to not repeat.
+      map on stars to only return colors
+      Array from to get rid of duplicates
+    iterate through colors array to create new object with colors as keys and [] as their value
+    with reduce or map(ideally)
+    iterate through stars and color array (or Object.keys for practice),
+      if stars.color === color
+        push entire star into colors[color]
+    foreach color.
+    object[color] = value
+    value is filtered stars array based on color
+    return starsByColor
+    */
+    function organizeByColor() {
+      let starColors = stars.map(star => star.color)
+      starColors = Array.from(new Set(starColors)) //array of non repeating star colors
+      const starsByColor = {}
+      starColors.forEach(color => {
+        starsByColor[color] = stars.filter(star => {
+          return star.color === color
+        })
+
+        })
+      return starsByColor
+    }
+    const result = organizeByColor()
     return result;
 
     // Annotation:
@@ -1121,8 +1217,22 @@ const astronomyPrompts = {
     //    "Orion",
     //    "The Little Dipper" ]
 
+    /* Display array of constellation names based on order of star brightness
+    need to sort stars based on visual magnitude, low is actually best so a - b
+    .map over sorted array and change to star.constellation.
+    Get rid of empty string, probablly with ... when using map*/
 
-    const result = 'REPLACE WITH YOUR RESULT HERE';
+    function orderConstellations() {
+      const filteredStars = stars.filter(star => star.constellation.length > 0)
+      const sortedStars = filteredStars.sort((a, b) => a.visualMagnitude - b.visualMagnitude)
+      const sortedContsellations = sortedStars.map(star => star.constellation)
+      // const joinedArray = Array.from(new Set(sortedContsellations))
+      // console.log(joinedArray)
+      return sortedContsellations
+
+    }
+
+    const result = orderConstellations()
     return result;
 
     // Annotation:
@@ -1153,7 +1263,28 @@ const ultimaPrompts = {
     // Return the sum of the amount of damage for all the weapons that our characters can use
     // Answer => 113
 
-    const result = 'REPLACE WITH YOUR RESULT HERE';
+    /*need to make array of weapons available to characters
+        .reduce characters to return ...character.weapons
+    Using reduce
+    // iterate over array of weapons, and change to weapons[weapon].damage
+    return acc += weapons[wep].damage
+
+    */
+
+    function getTotalDamage() {
+      const charWeps = characters.reduce((weps, char) => {
+        weps.push(...char.weapons)
+        return weps
+      }, [])
+      const totDam = charWeps.reduce((dams, wep) => {
+        return dams += weapons[wep].damage
+      }, 0)
+      // console.log(charWeps)
+      // console.log(totDam)
+      return totDam
+    }
+
+    const result = getTotalDamage()
     return result;
 
     // Annotation:
@@ -1165,7 +1296,36 @@ const ultimaPrompts = {
     // Return the sum damage and total range for each character as an object.
     // ex: [ { Avatar: { damage: 27, range: 24 }, { Iolo: {...}, ...}
 
-    const result = 'REPLACE WITH YOUR RESULT HERE';
+    /* using reduce, change each character in characters
+    to key = name
+    value = object
+      object.damage = totalDamage
+      object.range = totalRange
+
+    Reduce on characters, acc is empty array, character is ind character
+      create empty object
+      empty object[charName] = {damage: 0, range: 0}
+      keys are created need values
+      reduce on character.weapons, acc is {damage: 0, range: 0}, cv is weaponName
+        acc.damage += weapons[wepaon].damage
+        acc.range += weapons[weapon].range
+    return object
+*/
+    function getCharTots() {
+      return characters.reduce((chars, char) => {
+        charInfo = {} //big object
+        charInfo[char.name] = char.weapons.reduce((stats, wep) => {
+          stats.damage += weapons[wep].damage
+          stats.range += weapons[wep].range
+          return stats
+        }, {damage: 0, range: 0})
+        chars.push(charInfo)
+        return chars
+      }, [] )
+      // console.log(chars)
+    }
+
+    const result = getCharTots()
     return result;
 
     // Annotation:
